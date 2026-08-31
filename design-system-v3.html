@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分帳 App · Design System v3（方案 1B 質感溫柔）</title>
+<style>
+  :root{
+    /* Brand */
+    --primary:#6FB7B7;
+    --primary-deep:#4D8F8F;
+    --primary-soft:#E6F2F1;
+    --primary-tint:#F1F8F7;
+    --coral:#FF9B9B;
+    --coral-soft:#FFE9E9;
+    --yellow:#FFE866;
+
+    /* Tag families — 項目標籤 I 黃 / 人員條件 I 粉 (default #F8E2A0/#F3C9D0, active #D5A83E/#C57484) */
+    --item-bg:#F8E2A0;      /* 項目標籤 */
+    --item-bg-2:#F1D380;
+    --item-text:#86651A;
+    --item-line:#D5A83E;
+    --item-deep:#86651A;
+    --cond-bg:#F3C9D0;      /* 人員條件 */
+    --cond-bg-2:#EBB4BE;
+    --cond-text:#AD5B6B;
+    --cond-line:#C57484;
+    --cond-deep:#9C4B5B;
+
+    /* Neutral */
+    --bg:#EDFAFA;
+    --surface:#FFFFFF;
+    --surface-2:#F3F6F5;
+    --border:#E7EDEC;
+    --border-2:#DCE4E3;
+    --border-strong:#B9C6C3;
+    --text:#263238;
+    --text-2:#5B6670;
+    --text-3:#95A0A5;
+
+    /* Status */
+    --ok:#22C55E;--ok-soft:#E7F7EE;
+    --warn:#FFB52E;--warn-soft:#FFF4E0;
+    --info:#6FB787;--info-soft:#EAF4EE;
+    --danger:#FF6B6B;--danger-soft:#FFEBEB;
+
+    --r-pill:999px;
+    --r-lg:16px;
+    --r-md:12px;
+    --r-sm:8px;
+    --sh-1:0 1px 2px rgba(38,50,56,.05);
+    --sh-2:0 4px 14px rgba(38,50,56,.07);
+    --sh-3:0 12px 30px rgba(38,50,56,.12);
+    --font:"Noto Sans TC","PingFang TC","Microsoft JhengHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+  svg{display:block}
+  .ico{width:1em;height:1em;fill:currentColor;flex:none}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* Masthead */
+  header.mast{padding:48px 0 32px;border-bottom:1px solid var(--border);
+    background:radial-gradient(900px 260px at 8% -30%,rgba(111,183,183,.15),transparent 60%),
+               radial-gradient(700px 240px at 95% -40%,rgba(255,155,155,.10),transparent 55%)}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.16em;font-weight:700;color:var(--primary-deep);text-transform:uppercase;margin-bottom:12px}
+  .eyebrow .bar{width:24px;height:2px;background:var(--primary);border-radius:2px}
+  h1{font-size:34px;font-weight:800;letter-spacing:-.01em}
+  h1 small{display:block;font-size:15px;font-weight:500;color:var(--text-2);margin-top:8px}
+
+  /* Section */
+  section{padding:40px 0;border-bottom:1px solid var(--border)}
+  .sec-head{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  .sec-num{font-variant-numeric:tabular-nums;font-size:12px;font-weight:800;color:#fff;background:var(--primary);width:26px;height:26px;border-radius:var(--r-sm);display:grid;place-items:center;flex:none}
+  .sec-head h2{font-size:21px;font-weight:750}
+  .sec-head p{margin-left:auto;font-size:13px;color:var(--text-2);max-width:340px;text-align:right}
+  .sub{font-size:12px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-bottom:12px}
+
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:800px){.g2,.g3,.g4{grid-template-columns:1fr}.sec-head p{display:none}}
+
+  .card{background:var(--surface);border:2px solid #D5E9E6;border-radius:var(--r-lg);padding:18px}
+
+  /* attention ring — first card flags when user taps 新增 repeatedly (dup prevention) */
+  .card.attn,.item.attn{border-color:var(--warn);box-shadow:0 0 0 3px var(--warn-soft);position:relative}
+  .attn-tip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:650;color:#9A6800;background:var(--warn-soft);border:1px solid #F5D98A;padding:5px 11px;border-radius:var(--r-pill);margin-bottom:10px}
+  .attn-tip .ico{width:14px;height:14px;color:var(--warn)}
+  .mono{font-variant-numeric:tabular-nums}
+
+  /* Colors */
+  .sw{border-radius:var(--r-md);overflow:hidden;border:1px solid var(--border);background:var(--surface)}
+  .sw .c{height:76px}
+  .sw .m{padding:10px 12px}
+  .sw .n{font-size:13px;font-weight:650}
+  .sw .h{font-size:11px;color:var(--text-2);font-variant-numeric:tabular-nums;margin-top:2px}
+
+  .st{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--border)}
+  .st:last-child{border:0}
+  .st .ic{width:32px;height:32px;border-radius:var(--r-sm);display:grid;place-items:center;color:#fff;font-size:16px;flex:none}
+  .st .l{font-weight:650;font-size:14px}.st .d{font-size:12px;color:var(--text-2)}
+  .st .code{margin-left:auto;font-size:11px;color:var(--text-3);font-variant-numeric:tabular-nums}
+
+  /* Topbar — default: light surface + dark text/icons (per original draft) */
+  .topbar{display:flex;align-items:center;gap:12px;background:var(--surface);color:var(--text);padding:12px 16px;border-radius:var(--r-lg);border:2px solid #D5E9E6}
+  .topbar .tb-ic{width:38px;height:38px;border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer;color:var(--text-2);background:transparent;transition:.15s}
+  .topbar .tb-ic:hover{background:var(--surface-2);color:var(--text)}
+  .topbar .tb-ic .ico{width:20px;height:20px}
+  .topbar .tb-title{font-size:24px;font-weight:750;color:var(--text)}
+  .topbar .tb-sub{font-size:12.5px;color:var(--text-2);margin-top:2px}
+  .topbar .tb-center{flex:1;text-align:center}
+  .topbar .tb-center .tb-title{font-size:22px}
+  .topbar .tb-spacer{flex:1}
+  .topbar .tb-badge{background:var(--surface-2);color:var(--text-2);font-size:12px;font-weight:650;padding:4px 11px;border-radius:var(--r-pill)}
+  /* confirm (save) button — solid dark circle, matches draft */
+  .topbar .tb-confirm{width:40px;height:40px;border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer;background:var(--primary-deep);color:#fff;transition:.15s}
+  .topbar .tb-confirm:hover{background:#3f7676}
+  .topbar .tb-confirm .ico{width:19px;height:19px}
+  /* primary variant — teal ground, white icons */
+  .topbar.is-primary{background:var(--primary);color:#fff;border-color:transparent}
+  .topbar.is-primary .tb-ic{color:#fff;background:rgba(255,255,255,.16)}
+  .topbar.is-primary .tb-ic:hover{background:rgba(255,255,255,.28)}
+  .topbar.is-primary .tb-title,.topbar.is-primary .tb-sub{color:#fff}
+  .topbar.is-primary .tb-sub{color:rgba(255,255,255,.85)}
+  .topbar.is-primary .tb-badge{background:rgba(255,255,255,.22);color:#fff}
+  .topbar.is-primary .tb-confirm{background:#fff;color:var(--primary-deep)}
+
+  /* Type table */
+  .tyt{width:100%;border-collapse:collapse;font-size:13px}
+  .tyt thead th{text-align:left;font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+  .tyt tbody td{padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+  .tyt tbody tr:last-child td{border-bottom:0}
+  .tyt td:first-child{font-weight:650;color:var(--text);white-space:nowrap}
+  .tyt .px{font-variant-numeric:tabular-nums;font-weight:700;color:var(--primary-deep)}
+  .tyt .px::after{content:" px";font-size:10px;color:var(--text-3);font-weight:500}
+  .tyt .pt{font-variant-numeric:tabular-nums;color:var(--text-2)}
+  .tyt .pt::after{content:" pt";font-size:10px;color:var(--text-3)}
+  .tyt .ex{text-align:right}
+  @media(max-width:800px){.tyt .ex{display:none}}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:var(--font);font-weight:650;cursor:pointer;border:1px solid transparent;transition:.15s;font-size:16px;padding:11px 18px;border-radius:var(--r-pill)}
+  .btn .ico{font-size:16px}
+  .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-deep)}
+  .btn-soft{background:var(--primary-soft);color:var(--primary-deep)}.btn-soft:hover{background:#d9ecea}
+  .btn-ghost{background:var(--surface);color:var(--text);border-color:var(--border-2)}.btn-ghost:hover{background:var(--surface-2)}
+  /* clearer-bordered ghost — for modal secondary actions on light bg */
+  .btn-outline{background:var(--surface);color:var(--text);border:1.5px solid var(--border-strong)}.btn-outline:hover{background:var(--surface-2);border-color:var(--text-3)}
+  .btn-danger{background:var(--danger-soft);color:var(--danger)}.btn-danger:hover{background:#ffdede}
+  /* solid destructive — deep coral, replaces black for important confirm */
+  .btn-danger-solid{background:var(--danger);color:#fff}.btn-danger-solid:hover{background:#e85555}
+  .btn-sm{padding:7px 13px;font-size:13px}
+  .btn-lg{font-size:18px;padding:13px 22px;font-weight:700}
+  .btn-block{width:100%}
+  .btn-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+  /* Icon button (round, pill) */
+  .iconbtn{width:38px;height:38px;border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer;border:1px solid var(--border-2);background:var(--surface);color:var(--text-2);font-size:18px;transition:.15s}
+  .iconbtn:hover{background:var(--surface-2);color:var(--text)}
+  .iconbtn.solid{background:var(--primary);border-color:var(--primary);color:#fff}
+  .iconbtn.solid:hover{background:var(--primary-deep);border-color:var(--primary-deep)}
+  .iconbtn.done{background:var(--primary-soft);border-color:transparent;color:var(--primary-deep)}
+  .iconbtn.done:hover{background:#d9ecea}
+
+  /* Badge / tag (pill, round) */
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:650;padding:4px 11px;border-radius:var(--r-pill);line-height:1.5}
+  .role-host{background:var(--text);color:#fff}
+  .role-cohost{background:var(--primary-soft);color:var(--primary-deep)}
+  .role-guest{background:var(--surface-2);color:var(--text-2)}
+  .bg-done{background:var(--ok-soft);color:#137a3e}
+  .bg-archived{background:var(--surface-2);color:var(--text-3)}
+
+  .tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:650;padding:4px 11px;border-radius:var(--r-pill)}
+  .tag-item{background:var(--item-bg);color:var(--item-text)}
+  .tag-cond{background:var(--cond-bg);color:var(--cond-text)}
+  .tag-w{display:flex;flex-wrap:wrap;gap:7px}
+
+  /* Fields */
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:12px;color:var(--text-2);font-weight:650;margin-bottom:6px}
+  .input{width:100%;font-family:var(--font);font-size:14px;color:var(--text);padding:11px 13px;border:1px solid var(--border-2);border-radius:var(--r-md);background:var(--surface);transition:.14s}
+  .input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(111,183,183,.2)}
+  .input::placeholder{color:var(--text-3)}
+  .icheck{position:relative}
+  .icheck .input{padding-right:42px}
+  .icheck .ok{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:var(--r-sm);background:var(--primary);color:#fff;display:grid;place-items:center}
+  .icheck .ok .ico{width:15px;height:15px}
+  /* error state: red border + soft red fill (per screenshot) */
+  .input.error{border-color:var(--danger);background:var(--danger-soft)}
+  .input.error:focus{border-color:var(--danger);box-shadow:0 0 0 3px rgba(255,107,107,.18)}
+  .field-err{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--danger);margin-top:6px}
+  .field-err .ico{width:14px;height:14px}
+  /* error confirm button (round, when form invalid) — muted, not black */
+  .icheck.err .ok{background:var(--text-3)}
+
+  /* ---- Editing components ---- */
+  /* editable chip (tag with menu dots) — item = amber, cond = mauve */
+  .chip-edit{position:relative;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:650;padding:6px 8px 6px 13px;border-radius:var(--r-pill);background:var(--item-bg);color:var(--item-text);border:1.5px solid transparent}
+  .chip-edit.cond{background:var(--cond-bg);color:var(--cond-text)}
+  /* selected / expanded (menu open) — stronger border */
+  .chip-edit.sel{border-color:var(--item-line);background:var(--item-bg-2)}
+  .chip-edit.cond.sel{border-color:var(--cond-line);background:var(--cond-bg-2)}
+  .chip-edit .dots{width:20px;height:20px;border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer;color:currentColor;opacity:.55}
+  .chip-edit .dots:hover{opacity:1;background:rgba(0,0,0,.06)}
+  .chip-edit .dots .ico{width:15px;height:15px}
+  .chip-edit .x{width:18px;height:18px;border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer;background:rgba(0,0,0,.09);color:currentColor}
+  .chip-edit .x .ico{width:11px;height:11px}
+  /* chip context menu (刪除 / 編輯) */
+  .chip-menu{position:absolute;top:calc(100% + 6px);left:0;z-index:20;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-2);overflow:hidden;padding:4px}
+  .chip-menu .mi{display:flex;align-items:center;gap:9px;padding:9px 11px;font-size:13.5px;font-weight:600;color:var(--text);border-radius:var(--r-sm);cursor:pointer}
+  .chip-menu .mi:hover{background:var(--surface-2)}
+  .chip-menu .mi.danger{color:var(--danger)}
+  .chip-menu .mi.danger:hover{background:var(--danger-soft)}
+  .chip-menu .mi .ico{width:15px;height:15px}
+  /* chip name-input state (dashed teal ring while typing) */
+  .chip-input{display:inline-flex;align-items:center;font-size:13px;padding:6px 15px;border-radius:var(--r-pill);border:1.5px solid var(--primary);background:var(--surface);color:var(--text);min-width:120px}
+  .chip-input::placeholder{color:var(--text-3)}
+  /* add chip (dashed) */
+  .chip-add{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;padding:6px 13px;border-radius:var(--r-pill);border:1px dashed var(--border-2);background:transparent;color:var(--text-2);cursor:pointer}
+  .chip-add:hover{border-color:var(--primary);color:var(--primary-deep);background:var(--primary-tint)}
+  .chip-add .ico{width:14px;height:14px}
+  /* section-level save toggle (round) */
+  .save-btn{width:32px;height:32px;border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer;background:var(--primary-deep);color:#fff;flex:none;transition:.15s}
+  .save-btn:hover{background:#3f7676}
+  .save-btn .ico{width:16px;height:16px}
+  .edit-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .edit-hd .lft{font-size:16px;font-weight:750}
+  .edit-hd .rgt{display:flex;gap:8px;align-items:center}
+  /* select (dropdown trigger) */
+  .select{position:relative;width:100%}
+  .select .trg{display:flex;align-items:center;width:100%;font-size:14px;color:var(--text);padding:11px 13px;border:1px solid var(--border-2);border-radius:var(--r-md);background:var(--surface);cursor:pointer}
+  .select .trg.open{border-color:var(--primary);box-shadow:0 0 0 3px rgba(111,183,183,.2)}
+  .select .trg .ico{margin-left:auto;color:var(--text-3);width:18px;height:18px}
+  .select .menu{margin-top:6px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);box-shadow:var(--sh-2);overflow:hidden}
+  .select .opt{display:flex;align-items:center;padding:11px 14px;font-size:14px;cursor:pointer}
+  .select .opt:hover{background:var(--surface-2)}
+  .select .opt.sel{background:var(--primary-tint);color:var(--primary-deep);font-weight:650}
+  .select .opt.sel .ico{margin-left:auto;color:var(--primary);width:16px;height:16px}
+  /* date input */
+  .datefield{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--text-3);padding:11px 13px;border:1px solid var(--border-2);border-radius:var(--r-md);background:var(--surface)}
+  .datefield .ico{width:17px;height:17px;color:var(--text-3);margin-left:auto}
+  .date-actions{display:flex;gap:14px;margin-top:7px;font-size:12.5px}
+  .date-actions a{color:var(--primary-deep);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+  .date-actions a.muted{color:var(--text-3)}
+  .date-actions .ico{width:13px;height:13px}
+  .req{color:var(--danger);margin-left:3px}
+  /* rule editor row */
+  .rrow{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+  .rrow .handle{color:var(--text-3);cursor:grab;flex:none}
+  .rrow .handle .ico{width:18px;height:18px}
+  .rrow .cond-box{flex:1;display:flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid var(--border-2);border-radius:var(--r-md);background:var(--surface);min-height:44px}
+  .rrow .cnt{font-size:12px;color:var(--text-3)}
+  .rrow .ph{font-size:13px;color:var(--text-3)}
+  .rrow .pct-sel{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:650;color:var(--text-2);padding:9px 12px;border:1px solid var(--border-2);border-radius:var(--r-md);background:var(--surface);cursor:pointer;white-space:nowrap}
+  .rrow .pct-sel .ico{width:15px;height:15px;color:var(--text-3)}
+  .rrow .del{width:32px;height:32px;border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer;color:var(--text-3);flex:none}
+  .rrow .del:hover{background:var(--danger-soft);color:var(--danger)}
+  .rrow .del .ico{width:16px;height:16px}
+  /* inline card delete (trash beside title) */
+  .del-inline{width:32px;height:32px;border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer;color:var(--text-3);border:1px solid var(--border);background:var(--surface);flex:none;transition:.15s}
+  .del-inline:hover{background:var(--danger-soft);color:var(--danger);border-color:transparent}
+  .del-inline .ico{width:16px;height:16px}
+
+  /* Segmented selector (身分: selected / selectable / disabled) */
+  .seg{display:inline-flex;gap:8px;flex-wrap:wrap}
+  .seg .opt{font-size:14px;font-weight:600;padding:8px 18px;border-radius:var(--r-pill);border:1px solid var(--border-2);background:var(--surface);color:var(--text-2);cursor:pointer;transition:.15s}
+  .seg .opt:hover{border-color:var(--primary);color:var(--primary-deep)}
+  .seg .opt.on{background:var(--primary-soft);border-color:var(--primary);color:var(--primary-deep);font-weight:700}
+  .seg .opt.disabled{background:var(--surface-2);border-color:var(--border);color:var(--text-3);cursor:not-allowed;opacity:.7}
+  .seg .opt.disabled:hover{border-color:var(--border);color:var(--text-3)}
+
+  /* Toggle tag (selectable condition: on / off) */
+  .ttag{font-size:13px;font-weight:600;padding:7px 15px;border-radius:var(--r-pill);border:1px solid var(--border-2);background:var(--surface);color:var(--text-2);cursor:pointer;transition:.15s}
+  .ttag:hover{border-color:var(--primary)}
+  .ttag.on{background:var(--cond-bg);border-color:var(--cond-line);color:var(--cond-deep);font-weight:700}
+
+  /* Member edit card */
+  .medit .row1{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .medit .fld{flex:1}
+  .medit .lbl{font-size:12px;color:var(--text-2);font-weight:650;margin-bottom:7px}
+  .medit .acct{font-size:12px;color:var(--text-3);margin-top:14px}
+
+  /* Event card */
+  .evt{background:var(--surface);border:2px solid #D5E9E6;border-radius:var(--r-lg);padding:16px 18px;transition:.15s;cursor:pointer}
+  .evt:hover{box-shadow:var(--sh-2);border-color:var(--border-2)}
+  .evt .t{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+  .evt h4{font-size:18px;font-weight:750}
+  .evt .meta{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-2)}
+  .evt .meta .ico{font-size:14px;color:var(--text-3)}
+  .evt .meta+.meta{margin-top:4px}
+
+  /* Item card */
+  .item{background:var(--surface);border:2px solid #D5E9E6;border-radius:var(--r-lg);padding:16px 18px}
+  .item .r1{display:flex;justify-content:space-between;align-items:baseline}
+  .item .nm{font-size:16px;font-weight:700}
+  .item .amt{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+  .item .ds{font-size:12px;color:var(--text-2);margin:5px 0 10px}
+
+  /* Member row */
+  .mrow{display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:8px}
+  .mrow:last-child{margin-bottom:0}
+  .mck{width:22px;height:22px;border-radius:var(--r-pill);background:var(--primary);color:#fff;display:grid;place-items:center;font-size:12px;flex:none}
+  .mck .ico{width:13px;height:13px}
+  .mrow .nm{font-weight:650;font-size:14px}.mrow .tg{font-size:12px;color:#3E6EA5;font-weight:600}
+  .mrow .val{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)}
+  /* amount box: locked = neutral/greyed, unlocked = editable teal-tinted */
+  .amtbox{font-size:14px;padding:6px 11px;border-radius:var(--r-sm);border:1px solid var(--border);font-variant-numeric:tabular-nums;font-weight:650}
+  .amtbox.locked{color:var(--text-3);background:var(--surface-2);border-color:var(--border)}
+  .amtbox.unlocked{color:var(--text);background:var(--primary-tint);border-color:var(--primary)}
+  /* lock toggle button */
+  .locktog{width:30px;height:30px;border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer;flex:none;border:1px solid transparent;transition:.15s}
+  .locktog .ico{width:15px;height:15px}
+  .locktog.is-locked{background:var(--surface-2);color:var(--text-3);border-color:var(--border)}
+  .locktog.is-locked:hover{color:var(--text-2)}
+  .locktog.is-unlocked{background:var(--primary-soft);color:var(--primary-deep);border-color:transparent}
+  .locktog.is-unlocked:hover{background:#d9ecea}
+
+  /* Flow card */
+  .flow{background:var(--surface);border:2px solid #D5E9E6;border-radius:var(--r-lg);padding:16px 18px}
+  .flow .h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .flow .who{font-size:18px;font-weight:750}
+  .fl{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0}
+  .fl .lbl{color:var(--text-2);display:flex;align-items:center;gap:5px}
+  .fl .lbl .ico{font-size:13px;color:var(--text-3)}
+  .fl .v{font-variant-numeric:tabular-nums;font-weight:600}
+  .ftot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+  .ftot .k{font-size:12px;color:var(--text-3)}
+  .ftot .get{color:var(--primary-deep);font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+  .ftot .pay{color:var(--danger);font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+
+  /* Banner / note */
+  .note{display:flex;gap:9px;align-items:flex-start;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;font-size:13.5px;color:var(--text-2)}
+  .note .ico{color:var(--text-3);font-size:17px;margin-top:1px}
+  .banner-ok{display:flex;gap:10px;align-items:center;background:var(--ok-soft);border:1px solid #cdeeda;color:#137a3e;border-radius:var(--r-md);padding:12px 14px;font-size:13.5px;font-weight:650}
+  .banner-ok .ic{width:28px;height:28px;border-radius:var(--r-sm);background:var(--ok);color:#fff;display:grid;place-items:center;flex:none;font-size:15px}
+
+  /* Modal */
+  .mdemo{background:rgba(38,50,56,.3);border-radius:var(--r-lg);padding:36px 20px;display:flex;flex-wrap:wrap;gap:20px;justify-content:center}
+  .modal{background:var(--surface);border-radius:var(--r-lg);padding:24px;box-shadow:var(--sh-3);max-width:340px;width:100%;text-align:center}
+  .modal .mi{width:48px;height:48px;border-radius:var(--r-pill);display:grid;place-items:center;margin:0 auto 14px}
+  .modal .mi.warn{background:var(--warn-soft);color:var(--warn)}
+  .modal .mi.info{background:var(--primary-soft);color:var(--primary-deep)}
+  .modal .mi.danger{background:var(--danger-soft);color:var(--danger)}
+  .modal .mi .ico{width:24px;height:24px}
+  .modal h5{font-size:22px;font-weight:750;margin-bottom:6px}
+  .modal p{font-size:13.5px;color:var(--text-2);margin-bottom:18px}
+  .modal .acts{display:flex;gap:10px}
+
+  /* Invite */
+  .invite{border:2px solid #D5E9E6;border-radius:var(--r-lg);padding:18px;text-align:center;background:var(--surface)}
+  .invite .qr,.invite-card .qr{width:140px;height:140px;margin:10px auto;border-radius:var(--r-md);background:repeating-linear-gradient(45deg,#eef3f2 0 7px,#f9fcfb 7px 14px);display:grid;place-items:center;color:var(--text-3);border:1px solid var(--border)}
+  .invite .qr .ico,.invite-card .qr .ico{font-size:40px;color:var(--text-3)}
+  .invite .lk,.invite-card .lk{display:flex;align-items:center;gap:7px;justify-content:center;font-family:ui-monospace,monospace;font-size:12.5px;background:var(--surface-2);padding:9px;border-radius:var(--r-sm);color:var(--text-2);margin:9px 0}
+  .invite .cd,.invite-card .cd{font-family:ui-monospace,monospace;letter-spacing:.14em;font-weight:700;font-size:15px}
+
+  /* bare-tag group container (for tags shown outside a card / to sub-group inside one) */
+  .rgroup{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px}
+  .rgroup-t{font-size:12.5px;font-weight:700;color:var(--text-2);margin-bottom:9px}
+
+  /* bare vs container comparison */
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:800px){.cmp{grid-template-columns:1fr}}
+  .cmp-col .cmp-t{font-size:12px;font-weight:700;color:var(--text-3);margin-bottom:8px;letter-spacing:.03em}
+  .cmp-stage{background:var(--bg);border:1px dashed var(--border-2);border-radius:var(--r-md);padding:18px}
+
+  /* inline label + single tag (e.g. 我的人員條件 #吃素) */
+  .inline-tag{display:flex;align-items:center;gap:10px}
+  .inline-tag .lb{font-size:15px;font-weight:750;color:var(--text)}
+  /* empty-state tag: dashed, muted — reads as placeholder, still legible on bg */
+  .tag.empty{background:transparent;border:1px dashed var(--cond-line);color:var(--cond-text);opacity:.85}
+  .tag.empty::before{content:"#";opacity:.6;margin-right:1px}
+
+  /* Rule */
+  .rule{border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;margin-bottom:14px}
+  .rule:last-child{margin-bottom:0}
+  .rule .rh{padding:12px 14px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px}
+  .rline{display:flex;align-items:center;gap:9px;padding:10px 14px;border-top:1px solid var(--border);font-size:13.5px}
+  .rline .cnt{font-size:11px;color:var(--text-3)}
+  .rline .pct{margin-left:auto;color:var(--text-2);font-weight:650;font-variant-numeric:tabular-nums}
+  .rline .no{margin-left:auto;color:var(--text-3);font-weight:650}
+  .rline.base{background:var(--surface-2);color:var(--text-2)}
+
+  /* Nav / tabs bonus */
+  .tabs{display:flex;gap:6px;background:var(--surface-2);padding:5px;border-radius:var(--r-pill);width:fit-content}
+  .tab{padding:8px 20px;border-radius:var(--r-pill);font-size:14px;font-weight:650;color:var(--text-2);cursor:pointer;transition:.15s}
+  .tab.active{background:var(--surface);color:var(--primary-deep);box-shadow:var(--sh-1)}
+
+  footer{padding:34px 0 54px;color:var(--text-3);font-size:12.5px;text-align:center}
+</style>
+</head>
+<body>
+
+
+<!-- ============ SVG SPRITE (solid flat icons) ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M9.55 17.05 4.5 12l1.4-1.4 3.65 3.6 8.65-8.65L19.6 7z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2m-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4M9 8V6a3 3 0 0 1 6 0v2z"/></symbol>
+  <symbol id="i-unlock" viewBox="0 0 24 24"><path d="M18 8h-8V6a3 3 0 0 1 6 0h2A5 5 0 0 0 8 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2m-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m0 16H5V9h14z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7m0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4m-8 0a4 4 0 1 0-4-4 4 4 0 0 0 4 4m0 2c-2.67 0-8 1.34-8 4v3h9v-3c0-1.05.42-2 1.14-2.76A13 13 0 0 0 8 13m8 0c-.29 0-.62 0-.97.05A5.2 5.2 0 0 1 17 17v3h7v-3c0-2.66-5.33-4-8-4"/></symbol>
+  <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M4 11h12.2l-5.6-5.6L12 4l8 8-8 8-1.4-1.4 5.6-5.6H4z"/></symbol>
+  <symbol id="i-arrow-l" viewBox="0 0 24 24"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="M8.6 4.6 7.2 6l6 6-6 6 1.4 1.4L16 12z"/></symbol>
+  <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L12 14.8l-6.3 6.3-1.4-1.4L10.6 12 4.3 5.7l1.4-1.4L12 9.2l6.3-6.3z"/></symbol>
+  <symbol id="i-drag" viewBox="0 0 24 24"><path d="M4 7h16v2H4zm0 4h16v2H4zm0 4h16v2H4z"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4m0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4m0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2m6-6v-5a6 6 0 0 0-5-5.91V4a1 1 0 0 0-2 0v1.09A6 6 0 0 0 6 11v5l-2 2v1h16v-1z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m1 15h-2v-6h2zm0-8h-2V7h2z"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M1 21h22L12 2zm12-3h-2v-2h2zm0-4h-2v-4h2z"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><path d="M3 11h8V3H3zm2-6h4v4H5zM3 21h8v-8H3zm2-6h4v4H5zM13 3v8h8V3zm6 6h-4V5h4zm-6 4h2v2h-2zm2 2h2v2h-2zm2-2h2v2h-2zm-4 4h2v2h-2zm2 2h2v2h-2zm2-2h2v2h-2zm2 0h2v2h-2zm0-4h2v2h-2z"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12M8 13h8v-2H8zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M18 2 16.5 3.5 15 2l-1.5 1.5L12 2l-1.5 1.5L9 2 7.5 3.5 6 2v20l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22zm-2 14H8v-2h8zm0-4H8v-2h8zm0-4H8V6h8z"/></symbol>
+  <symbol id="i-exit" viewBox="0 0 24 24"><path d="M10 2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h5v-2H5V4h5zm7.6 6.6L16.2 10l1.8 1.8H9v2h9l-1.8 1.8 1.4 1.4L22 12z"/></symbol>
+</svg>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="eyebrow"><span class="bar"></span>Design System v3 · 方案 1B</div>
+    <h1>分帳 App 設計系統
+      <small>質感溫柔 · 主色 #6FB7B7 · 背景 #EDFAFA · 卡片白 + 2px #D5E9E6 框 · I 黃粉標籤</small>
+    </h1>
+  </div>
+</header>
+
+<!-- 01 COLORS -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">01</span><h2>色彩系統</h2><p>涵蓋品牌、狀態、互動、標籤、表單、卡片與角色各元件用色。</p></div>
+
+    <div class="sub">品牌色</div>
+    <div class="grid g4" style="margin-bottom:26px">
+      <div class="sw"><div class="c" style="background:#6FB7B7"></div><div class="m"><div class="n">主色</div><div class="h">#6FB7B7</div></div></div>
+      <div class="sw"><div class="c" style="background:#4D8F8F"></div><div class="m"><div class="n">主色深</div><div class="h">#4D8F8F</div></div></div>
+      <div class="sw"><div class="c" style="background:#FF9B9B"></div><div class="m"><div class="n">輔色 珊瑚</div><div class="h">#FF9B9B</div></div></div>
+      <div class="sw"><div class="c" style="background:#FFE866"></div><div class="m"><div class="n">輔色 淺</div><div class="h">#FFE866</div></div></div>
+    </div>
+
+    <div class="sub">標籤色系（項目黃 / 人員條件粉，與主色拉開）</div>
+    <div class="grid g4" style="margin-bottom:26px">
+      <div class="sw"><div class="c" style="background:#F8E2A0"></div><div class="m"><div class="n">項目標籤底</div><div class="h">#F8E2A0（選中 #D5A83E）</div></div></div>
+      <div class="sw"><div class="c" style="background:#86651A"></div><div class="m"><div class="n">項目標籤字/深</div><div class="h">#86651A</div></div></div>
+      <div class="sw"><div class="c" style="background:#F3C9D0"></div><div class="m"><div class="n">人員條件底</div><div class="h">#F3C9D0（選中 #C57484）</div></div></div>
+      <div class="sw"><div class="c" style="background:#AD5B6B"></div><div class="m"><div class="n">人員條件字/深</div><div class="h">#AD5B6B</div></div></div>
+    </div>
+
+    <div class="sub">中性色</div>
+    <div class="grid g4" style="margin-bottom:26px">
+      <div class="sw"><div class="c" style="background:#EDFAFA"></div><div class="m"><div class="n">背景</div><div class="h">#EDFAFA</div></div></div>
+      <div class="sw"><div class="c" style="background:#FFFFFF;border-bottom:1px solid var(--border)"></div><div class="m"><div class="n">表面（卡片）</div><div class="h">#FFFFFF</div></div></div>
+      <div class="sw"><div class="c" style="background:#263238"></div><div class="m"><div class="n">文字</div><div class="h">#263238</div></div></div>
+      <div class="sw"><div class="c" style="background:#5B6670"></div><div class="m"><div class="n">次要文字</div><div class="h">#5B6670</div></div></div>
+    </div>
+
+    <div class="sub">狀態色系</div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="st"><div class="ic" style="background:#22C55E"><svg class="ico"><use href="#i-check"/></svg></div><div><div class="l">成功 / 已結清</div><div class="d">結帳完成、款項已收齊</div></div><div class="code">#22C55E</div></div>
+        <div class="st"><div class="ic" style="background:#FFB52E"><svg class="ico"><use href="#i-bell"/></svg></div><div><div class="l">提醒 / 待收款</div><div class="d">尚有款項未繳</div></div><div class="code">#FFB52E</div></div>
+      </div>
+      <div class="card">
+        <div class="st"><div class="ic" style="background:#6FB787"><svg class="ico"><use href="#i-info"/></svg></div><div><div class="l">資訊 / 一般</div><div class="d">中性提示訊息</div></div><div class="code">#6FB787</div></div>
+        <div class="st"><div class="ic" style="background:#FF6B6B"><svg class="ico"><use href="#i-warn"/></svg></div><div><div class="l">警示 / 錯誤</div><div class="d">操作失敗或需注意</div></div><div class="code">#FF6B6B</div></div>
+      </div>
+    </div>
+
+    <div class="sub" style="margin-top:30px">狀態底色（淺，用於 Banner／提示背景）</div>
+    <div class="grid g4" style="margin-bottom:26px">
+      <div class="sw"><div class="c" style="background:#E7F7EE"></div><div class="m"><div class="n">成功底</div><div class="h">#E7F7EE</div></div></div>
+      <div class="sw"><div class="c" style="background:#FFF4E0"></div><div class="m"><div class="n">提醒底</div><div class="h">#FFF4E0</div></div></div>
+      <div class="sw"><div class="c" style="background:#EAF4EE"></div><div class="m"><div class="n">資訊底</div><div class="h">#EAF4EE</div></div></div>
+      <div class="sw"><div class="c" style="background:#FFEBEB"></div><div class="m"><div class="n">錯誤底</div><div class="h">#FFEBEB</div></div></div>
+    </div>
+
+    <div class="sub">互動 / 按鈕狀態</div>
+    <div class="grid g4" style="margin-bottom:26px">
+      <div class="sw"><div class="c" style="background:#6FB7B7"></div><div class="m"><div class="n">主要 · 一般</div><div class="h">#6FB7B7</div></div></div>
+      <div class="sw"><div class="c" style="background:#4D8F8F"></div><div class="m"><div class="n">主要 · Hover</div><div class="h">#4D8F8F</div></div></div>
+      <div class="sw"><div class="c" style="background:#E6F2F1"></div><div class="m"><div class="n">柔底鈕 · 一般</div><div class="h">#E6F2F1</div></div></div>
+      <div class="sw"><div class="c" style="background:#D9ECEA"></div><div class="m"><div class="n">柔底鈕 · Hover</div><div class="h">#D9ECEA</div></div></div>
+      <div class="sw"><div class="c" style="background:#FFFFFF;border-bottom:1px solid var(--border)"></div><div class="m"><div class="n">描邊鈕 · 底</div><div class="h">#FFFFFF</div></div></div>
+      <div class="sw"><div class="c" style="background:#B9C6C3"></div><div class="m"><div class="n">描邊鈕 · 框</div><div class="h">#B9C6C3</div></div></div>
+      <div class="sw"><div class="c" style="background:#FF6B6B"></div><div class="m"><div class="n">危險實心 · 一般</div><div class="h">#FF6B6B</div></div></div>
+      <div class="sw"><div class="c" style="background:#E85555"></div><div class="m"><div class="n">危險實心 · Hover</div><div class="h">#E85555</div></div></div>
+    </div>
+
+    <div class="sub">標籤狀態</div>
+    <div class="grid g4" style="margin-bottom:12px">
+      <div class="sw"><div class="c" style="background:#F8E2A0"></div><div class="m"><div class="n">項目標籤 · 一般</div><div class="h">#F8E2A0</div></div></div>
+      <div class="sw"><div class="c" style="background:#F1D380"></div><div class="m"><div class="n">項目標籤 · 選中底</div><div class="h">#F1D380</div></div></div>
+      <div class="sw"><div class="c" style="background:#D5A83E"></div><div class="m"><div class="n">項目標籤 · 選中框</div><div class="h">#D5A83E</div></div></div>
+      <div class="sw"><div class="c" style="background:#86651A"></div><div class="m"><div class="n">項目標籤 · 文字</div><div class="h">#86651A</div></div></div>
+    </div>
+    <div class="grid g4" style="margin-bottom:26px">
+      <div class="sw"><div class="c" style="background:#F3C9D0"></div><div class="m"><div class="n">人員條件 · 一般</div><div class="h">#F3C9D0</div></div></div>
+      <div class="sw"><div class="c" style="background:#EBB4BE"></div><div class="m"><div class="n">人員條件 · 選中底</div><div class="h">#EBB4BE</div></div></div>
+      <div class="sw"><div class="c" style="background:#C57484"></div><div class="m"><div class="n">人員條件 · 選中框</div><div class="h">#C57484</div></div></div>
+      <div class="sw"><div class="c" style="background:#AD5B6B"></div><div class="m"><div class="n">人員條件 · 文字</div><div class="h">#AD5B6B</div></div></div>
+    </div>
+
+    <div class="sub">表單狀態</div>
+    <div class="grid g4" style="margin-bottom:26px">
+      <div class="sw"><div class="c" style="background:#DCE4E3"></div><div class="m"><div class="n">輸入框 · 一般框</div><div class="h">#DCE4E3</div></div></div>
+      <div class="sw"><div class="c" style="background:#6FB7B7"></div><div class="m"><div class="n">輸入框 · Focus 框</div><div class="h">#6FB7B7</div></div></div>
+      <div class="sw"><div class="c" style="background:#FF6B6B"></div><div class="m"><div class="n">輸入框 · 錯誤框</div><div class="h">#FF6B6B</div></div></div>
+      <div class="sw"><div class="c" style="background:#FFEBEB"></div><div class="m"><div class="n">輸入框 · 錯誤底</div><div class="h">#FFEBEB</div></div></div>
+      <div class="sw"><div class="c" style="background:#F1F8F7"></div><div class="m"><div class="n">金額框 · 可編輯底</div><div class="h">#F1F8F7</div></div></div>
+      <div class="sw"><div class="c" style="background:#F3F6F5"></div><div class="m"><div class="n">金額框 · 鎖定底</div><div class="h">#F3F6F5</div></div></div>
+      <div class="sw"><div class="c" style="background:#FFB52E"></div><div class="m"><div class="n">防呆提醒框</div><div class="h">#FFB52E</div></div></div>
+      <div class="sw"><div class="c" style="background:#95A0A5"></div><div class="m"><div class="n">確認鈕 · 停用</div><div class="h">#95A0A5</div></div></div>
+    </div>
+
+    <div class="sub">卡片與邊界</div>
+    <div class="grid g4" style="margin-bottom:26px">
+      <div class="sw"><div class="c" style="background:#FFFFFF;border-bottom:1px solid var(--border)"></div><div class="m"><div class="n">卡片表面</div><div class="h">#FFFFFF</div></div></div>
+      <div class="sw"><div class="c" style="background:#D5E9E6"></div><div class="m"><div class="n">卡片邊框 2px</div><div class="h">#D5E9E6</div></div></div>
+      <div class="sw"><div class="c" style="background:#F3F6F5"></div><div class="m"><div class="n">內層 / 群組容器底</div><div class="h">#F3F6F5</div></div></div>
+      <div class="sw"><div class="c" style="background:#E7EDEC"></div><div class="m"><div class="n">分隔線 / 細框</div><div class="h">#E7EDEC</div></div></div>
+    </div>
+
+    <div class="sub">角色與狀態標記</div>
+    <div class="grid g4" style="margin-bottom:6px">
+      <div class="sw"><div class="c" style="background:#263238"></div><div class="m"><div class="n">主辦者 · 底</div><div class="h">#263238</div></div></div>
+      <div class="sw"><div class="c" style="background:#E6F2F1"></div><div class="m"><div class="n">協辦者 · 底</div><div class="h">#E6F2F1</div></div></div>
+      <div class="sw"><div class="c" style="background:#F3F6F5"></div><div class="m"><div class="n">參與者 · 底</div><div class="h">#F3F6F5</div></div></div>
+      <div class="sw"><div class="c" style="background:#E7F7EE"></div><div class="m"><div class="n">已結帳 · 底</div><div class="h">#E7F7EE</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 TYPOGRAPHY -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">02</span><h2>字級系統</h2><p>六級：12 標籤 / 14 內容 / 16 卡片標題·一般鈕 / 18 主鈕·各項標題 / 22 popup / 24 topbar。</p></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="tyt">
+        <thead><tr><th>用途</th><th>px</th><th>pt</th><th>字重</th><th style="text-align:right">範例</th></tr></thead>
+        <tbody>
+          <tr><td>Topbar 標題</td><td class="px">24</td><td class="pt">18</td><td>750</td><td class="ex"><span style="font-size:24px;font-weight:750">款項現況</span></td></tr>
+          <tr><td>Popup 標題</td><td class="px">22</td><td class="pt">16.5</td><td>750</td><td class="ex"><span style="font-size:22px;font-weight:750">確定要結帳產出？</span></td></tr>
+          <tr><td>主要按鈕、各項標題</td><td class="px">18</td><td class="pt">13.5</td><td>700</td><td class="ex"><span style="font-size:18px;font-weight:700">包廂場地費 等 3 項</span></td></tr>
+          <tr><td>卡片標題、一般按鈕</td><td class="px">16</td><td class="pt">12</td><td>650</td><td class="ex"><span style="font-size:16px;font-weight:650">超商飲料</span></td></tr>
+          <tr><td>佔位符、一般內容</td><td class="px">14</td><td class="pt">10.5</td><td>400</td><td class="ex"><span style="font-size:14px">大安區 好客燒肉</span></td></tr>
+          <tr><td>備註小字、標籤</td><td class="px">12</td><td class="pt">9</td><td>400</td><td class="ex"><span style="font-size:12px;color:var(--text-2)">小明 代墊 · 明細 3 筆</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px;color:var(--text-3);margin-top:10px">＊金額一律套用等寬數字（tabular-nums），例：<span class="mono" style="font-weight:800;font-size:16px;color:var(--text)">NT$ 3,240</span>。字重可依情境加粗（標題 700–750、按鈕 650–700、內容 400）。</p>
+  </div>
+</section>
+
+<!-- 03 BUTTONS -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">03</span><h2>按鈕與 Icon Button</h2><p>按鈕與圖示鈕皆採 pill 圓角；主色為主要行動色。</p></div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="sub">文字按鈕</div>
+        <div class="btn-row" style="margin-bottom:12px">
+          <button class="btn btn-primary"><svg class="ico"><use href="#i-plus"/></svg>新增活動</button>
+          <button class="btn btn-soft">加入活動</button>
+          <button class="btn btn-ghost"><svg class="ico"><use href="#i-copy"/></svg>複製連結</button>
+          <button class="btn btn-danger"><svg class="ico"><use href="#i-trash"/></svg>刪除</button>
+        </div>
+        <div class="btn-row" style="margin-bottom:12px">
+          <button class="btn btn-primary btn-sm">確認結帳</button>
+          <button class="btn btn-ghost btn-sm">取消</button>
+          <button class="btn btn-primary" disabled style="opacity:.45;cursor:not-allowed">停用</button>
+        </div>
+        <button class="btn btn-primary btn-lg btn-block"><svg class="ico"><use href="#i-check"/></svg>確認結帳產出</button>
+      </div>
+      <div class="card">
+        <div class="sub">Icon Button（圓形）</div>
+        <div class="btn-row">
+          <span class="iconbtn solid"><svg class="ico"><use href="#i-plus"/></svg></span>
+          <span class="iconbtn"><svg class="ico"><use href="#i-edit"/></svg></span>
+          <span class="iconbtn"><svg class="ico"><use href="#i-trash"/></svg></span>
+          <span class="iconbtn"><svg class="ico"><use href="#i-menu"/></svg></span>
+          <span class="iconbtn"><svg class="ico"><use href="#i-arrow-l"/></svg></span>
+          <span class="iconbtn done"><svg class="ico"><use href="#i-check"/></svg></span>
+        </div>
+        <div class="sub" style="margin-top:18px">分頁切換 Tabs</div>
+        <div class="tabs"><span class="tab active">分帳</span><span class="tab">活動</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 TOPBAR -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Topbar 頁首列</h2><p>預設淺底深字（依原草稿）；主色版本供對照。</p></div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="sub" style="margin-bottom:0">預設 · 列表頁（選單 + 標題 + 新增）</div>
+      <div class="topbar">
+        <span class="tb-ic"><svg class="ico"><use href="#i-menu"/></svg></span>
+        <div><div class="tb-title">嗨，小明</div></div>
+        <div class="tb-spacer"></div>
+        <span class="tb-ic"><svg class="ico"><use href="#i-plus"/></svg></span>
+      </div>
+
+      <div class="sub" style="margin-bottom:0;margin-top:6px">預設 · 編輯狀態（返回 + 置中標題 + 主色確認鈕）</div>
+      <div class="topbar">
+        <span class="tb-ic"><svg class="ico"><use href="#i-arrow-l"/></svg></span>
+        <div class="tb-center"><div class="tb-title">分攤規則</div></div>
+        <span class="tb-ic"><svg class="ico"><use href="#i-close"/></svg></span>
+        <span class="tb-confirm"><svg class="ico"><use href="#i-check"/></svg></span>
+      </div>
+
+      <div class="sub" style="margin-bottom:0;margin-top:6px">預設 · 活動頁（標題 + 副標 + 狀態）</div>
+      <div class="topbar">
+        <span class="tb-ic"><svg class="ico"><use href="#i-menu"/></svg></span>
+        <div>
+          <div class="tb-title">部門季末聚餐</div>
+          <div class="tb-sub">8/22（五）19:00 · 大安區 好客燒肉</div>
+        </div>
+        <div class="tb-spacer"></div>
+        <span class="tb-badge">主辦者</span>
+      </div>
+
+      <div class="sub" style="margin-bottom:0;margin-top:14px">主色版本（對照用 · 白色 icon）</div>
+      <div class="topbar is-primary">
+        <span class="tb-ic"><svg class="ico"><use href="#i-menu"/></svg></span>
+        <div class="tb-center"><div class="tb-title">分攤規則</div></div>
+        <span class="tb-ic"><svg class="ico"><use href="#i-close"/></svg></span>
+        <span class="tb-confirm"><svg class="ico"><use href="#i-check"/></svg></span>
+      </div>
+      <div class="note" style="margin-top:2px"><svg class="ico"><use href="#i-info"/></svg>建議採「預設淺底」：主色留給標籤、選中項、CTA 等可點元素，辨識度較高；主色 topbar 上白字對比偏低，且會與同色的強調元素混淆。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 BADGES & TAGS -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">05</span><h2>角色標籤與標記</h2><p>角色 solid；項目標籤與人員條件採低彩度鄰近色，與主色和諧共存。</p></div>
+    <div class="grid g3">
+      <div class="card"><div class="sub">角色 / 狀態</div>
+        <div class="tag-w">
+          <span class="badge role-host">主辦者</span>
+          <span class="badge role-cohost">協辦者</span>
+          <span class="badge role-guest">參與者</span>
+          <span class="badge bg-done"><svg class="ico"><use href="#i-check"/></svg>已結帳</span>
+          <span class="badge bg-archived">已封存</span>
+        </div>
+      </div>
+      <div class="card"><div class="sub">項目標籤（記帳項目用）</div>
+        <div class="tag-w">
+          <span class="tag tag-item">肉</span><span class="tag tag-item">酒</span>
+          <span class="tag tag-item">素食</span><span class="tag tag-item">交通</span><span class="tag tag-item">其他</span>
+        </div>
+      </div>
+      <div class="card"><div class="sub">人員條件（人員自訂）</div>
+        <div class="tag-w">
+          <span class="tag tag-cond">#吃素</span><span class="tag tag-cond">#不喝酒</span>
+          <span class="tag tag-cond">#不吃牛</span><span class="tag tag-cond">#食物過敏</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 FORM -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">06</span><h2>表單元件</h2><p>含正常、鎖定/可編輯、錯誤狀態與新增防呆提醒。</p></div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="field"><label>項目名稱</label><div class="icheck"><input class="input" value="包廂場地費"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span></div></div>
+        <div class="field"><label>金額</label><input class="input" value="1200"></div>
+        <div class="field"><label>標籤</label><input class="input" placeholder="搜尋或選擇標籤"></div>
+        <div class="field" style="margin-bottom:0"><label>備註</label><input class="input" value="低消已折抵"></div>
+      </div>
+      <div class="card">
+        <div class="sub">分攤明細（共 4 人分攤）</div>
+        <div class="mrow"><span class="mck"><svg class="ico"><use href="#i-check"/></svg></span><div><div class="nm">小明（你）</div></div><div class="val">NT$ <span class="amtbox locked">300</span><span class="locktog is-locked"><svg class="ico"><use href="#i-lock"/></svg></span></div></div>
+        <div class="mrow"><span class="mck"><svg class="ico"><use href="#i-check"/></svg></span><div><div class="nm">大明</div><div class="tg">#不喝酒</div></div><div class="val">NT$ <span class="amtbox locked">300</span><span class="locktog is-locked"><svg class="ico"><use href="#i-lock"/></svg></span></div></div>
+        <div class="mrow"><span class="mck"><svg class="ico"><use href="#i-check"/></svg></span><div><div class="nm">小美</div><div class="tg">#吃素</div></div><div class="val">NT$ <span class="amtbox unlocked">300</span><span class="locktog is-unlocked"><svg class="ico"><use href="#i-unlock"/></svg></span></div></div>
+        <div class="mrow"><span class="mck"><svg class="ico"><use href="#i-check"/></svg></span><div><div class="nm">佳蓉</div></div><div class="val">NT$ <span class="amtbox unlocked">300</span><span class="locktog is-unlocked"><svg class="ico"><use href="#i-unlock"/></svg></span></div></div>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:11.5px;color:var(--text-3)">
+          <span style="display:inline-flex;align-items:center;gap:5px"><span class="amtbox locked" style="padding:2px 7px;font-size:11px">鎖定</span>金額固定、不隨分攤變動</span>
+          <span style="display:inline-flex;align-items:center;gap:5px"><span class="amtbox unlocked" style="padding:2px 7px;font-size:11px">可編輯</span>參與均分計算</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:16px;align-items:start">
+      <!-- error states -->
+      <div class="card">
+        <div class="sub">錯誤狀態</div>
+        <div class="field">
+          <div class="icheck err"><input class="input error" placeholder="品項名稱"><span class="ok"><svg class="ico"><use href="#i-check"/></svg></span></div>
+          <div class="field-err"><svg class="ico"><use href="#i-warn"/></svg>請輸入品項名稱</div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <input class="input error" value="21s">
+          <div class="field-err"><svg class="ico"><use href="#i-warn"/></svg>金額只能輸入數字</div>
+        </div>
+      </div>
+
+      <!-- dup-add prevention -->
+      <div class="card">
+        <div class="sub">防呆：連續點「新增」時提醒第一張卡片</div>
+        <div class="item attn">
+          <div class="r1"><span class="nm">未命名品項</span><span class="amt">NT$ 0</span></div>
+          <div class="ds">尚未輸入名稱與金額</div>
+        </div>
+        <div class="item" style="margin-top:12px">
+          <div class="r1"><span class="nm">超商飲料</span><span class="amt">NT$ 360</span></div>
+          <div class="ds">大明 代墊 · 明細 1 筆 · 你分攤 NT$ 90</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 EDITING -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">07</span><h2>編輯狀態元件</h2><p>可移除標籤、下拉、日期、規則列、身分選擇（選中/停用/可選）與刪除。</p></div>
+
+    <div class="grid g2">
+      <!-- Editable chips + save toggle -->
+      <div class="card">
+        <div class="edit-hd">
+          <span class="lft">項目標籤</span>
+          <span class="save-btn"><svg class="ico"><use href="#i-check"/></svg></span>
+        </div>
+        <div class="tag-w" style="margin-bottom:8px">
+          <span class="chip-edit">肉<span class="dots"><svg class="ico"><use href="#i-more"/></svg></span></span>
+          <span class="chip-edit">酒<span class="dots"><svg class="ico"><use href="#i-more"/></svg></span></span>
+          <span class="chip-edit">素食<span class="dots"><svg class="ico"><use href="#i-more"/></svg></span></span>
+          <!-- selected + menu open -->
+          <span class="chip-edit sel">交通<span class="dots"><svg class="ico"><use href="#i-more"/></svg></span>
+            <span class="chip-menu">
+              <span class="mi danger"><svg class="ico"><use href="#i-trash"/></svg>刪除</span>
+              <span class="mi"><svg class="ico"><use href="#i-edit"/></svg>編輯</span>
+            </span>
+          </span>
+        </div>
+        <div class="tag-w" style="margin-bottom:16px">
+          <input class="chip-input" placeholder="輸入名稱">
+          <span class="chip-add"><svg class="ico"><use href="#i-plus"/></svg>新增項目標籤</span>
+        </div>
+        <div class="edit-hd" style="margin-top:4px">
+          <span class="lft" style="font-size:14px">人員條件（可移除）</span>
+        </div>
+        <div class="tag-w">
+          <span class="chip-edit cond">吃素<span class="dots"><svg class="ico"><use href="#i-more"/></svg></span></span>
+          <span class="chip-edit cond sel">不喝酒<span class="dots"><svg class="ico"><use href="#i-more"/></svg></span></span>
+          <span class="chip-edit cond">食物過敏<span class="x"><svg class="ico"><use href="#i-close"/></svg></span></span>
+          <span class="chip-add"><svg class="ico"><use href="#i-plus"/></svg>新增人員條件</span>
+        </div>
+      </div>
+
+      <!-- Dropdown / select -->
+      <div class="card">
+        <div class="edit-hd"><span class="lft">下拉選單 Select</span></div>
+        <div class="field"><label>選擇項目標籤</label>
+          <div class="select">
+            <div class="trg open">肉<svg class="ico"><use href="#i-chev-d"/></svg></div>
+            <div class="menu">
+              <div class="opt sel">肉<svg class="ico"><use href="#i-check"/></svg></div>
+              <div class="opt">素食</div>
+              <div class="opt">交通</div>
+              <div class="opt">其他</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:16px">
+      <!-- Edit activity form (dialog-style, from 圖五) -->
+      <div class="card">
+        <div class="edit-hd">
+          <span class="lft">編輯活動資訊</span>
+          <div class="rgt">
+            <span class="tb-ic" style="width:34px;height:34px;color:var(--text-3);border:1px solid var(--border);border-radius:var(--r-pill);display:grid;place-items:center;cursor:pointer"><svg class="ico" style="width:16px;height:16px"><use href="#i-close"/></svg></span>
+            <span class="save-btn"><svg class="ico"><use href="#i-check"/></svg></span>
+          </div>
+        </div>
+        <div class="field"><label>活動名稱<span class="req">＊</span></label><input class="input" value="部門季末聚餐"></div>
+        <div class="field"><label>活動時間</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="flex:1"><div class="datefield">年 / 月 / 日<svg class="ico"><use href="#i-cal"/></svg></div></div>
+            <span style="color:var(--text-3)">～</span>
+            <div style="flex:1"><div class="datefield">年 / 月 / 日<svg class="ico"><use href="#i-cal"/></svg></div></div>
+          </div>
+          <div class="date-actions"><a><svg class="ico"><use href="#i-plus"/></svg>加時間</a><a class="muted">清除日期</a></div>
+          <div style="font-size:11.5px;color:var(--text-3);margin-top:6px">未調整則保留原時間：8/22（五）19:00</div>
+        </div>
+        <div class="field" style="margin-bottom:0"><label>活動地點</label><input class="input" value="大安區 好客燒肉"></div>
+      </div>
+
+      <!-- Rule editor + inline delete -->
+      <div class="card">
+        <div class="edit-hd">
+          <span class="lft" style="display:flex;align-items:center;gap:8px"><span class="tag tag-item">肉</span>編輯分攤規則</span>
+          <div class="rgt">
+            <span class="del-inline"><svg class="ico"><use href="#i-trash"/></svg></span>
+            <span class="save-btn"><svg class="ico"><use href="#i-check"/></svg></span>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-2);font-weight:650;margin-bottom:10px">分攤規則</div>
+        <div class="rrow">
+          <span class="handle"><svg class="ico"><use href="#i-drag"/></svg></span>
+          <div class="cond-box">
+            <span class="chip-edit cond" style="padding:4px 6px 4px 11px">吃素<span class="x"><svg class="ico"><use href="#i-close"/></svg></span></span>
+            <span class="cnt">符合 1 人</span>
+            <span class="ph" style="margin-left:auto">選擇條件</span>
+          </div>
+          <span class="pct-sel">不計入<svg class="ico"><use href="#i-chev-d"/></svg></span>
+          <span class="del"><svg class="ico"><use href="#i-close"/></svg></span>
+        </div>
+        <div class="rrow">
+          <span class="handle"><svg class="ico"><use href="#i-drag"/></svg></span>
+          <div class="cond-box">
+            <span class="cnt">符合 0 人</span>
+            <span class="ph" style="margin-left:auto">選擇條件</span>
+          </div>
+          <span class="pct-sel">每人 50%<svg class="ico"><use href="#i-chev-d"/></svg></span>
+          <span class="del"><svg class="ico"><use href="#i-close"/></svg></span>
+        </div>
+        <span class="chip-add" style="margin-top:2px"><svg class="ico"><use href="#i-plus"/></svg>新增分攤規則</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:13.5px">
+          <span style="color:var(--text-2)">其他未符合規則的人員</span>
+          <span style="color:var(--text-2);font-weight:650">每人 100%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub" style="margin-top:22px">編輯人員（身分 + 人員條件）</div>
+    <div class="card medit" style="max-width:560px">
+      <div class="row1">
+        <div class="fld"><input class="input" value="小明"></div>
+        <span class="save-btn" style="width:40px;height:40px"><svg class="ico" style="width:19px;height:19px"><use href="#i-check"/></svg></span>
+      </div>
+      <div class="lbl">身分</div>
+      <div class="seg" style="margin-bottom:16px">
+        <span class="opt on">主辦者</span>
+        <span class="opt disabled">協辦者</span>
+        <span class="opt">參與者</span>
+      </div>
+      <div class="lbl">人員條件</div>
+      <div class="tag-w">
+        <span class="ttag on">吃素</span>
+        <span class="ttag">不喝酒</span>
+        <span class="ttag">不吃牛</span>
+        <span class="ttag">食物過敏</span>
+      </div>
+      <div class="acct">帳號（10123）</div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 CARDS -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">08</span><h2>活動卡與款項卡</h2><p>meta 用扁平 icon 前綴，資訊緊湊易掃描。</p></div>
+    <div class="grid g3" style="margin-bottom:16px">
+      <div class="evt"><div class="t"><h4>部門季末聚餐</h4><span class="badge role-host">主辦者</span></div>
+        <div class="meta"><svg class="ico"><use href="#i-cal"/></svg>8/22（五）19:00</div>
+        <div class="meta"><svg class="ico"><use href="#i-pin"/></svg>大安區 好客燒肉 · <svg class="ico" style="margin-left:2px"><use href="#i-users"/></svg>4 人</div>
+      </div>
+      <div class="evt"><div class="t"><h4>週末露營裝備分攤</h4><span class="badge role-guest">參與者</span></div>
+        <div class="meta"><svg class="ico"><use href="#i-cal"/></svg>9/5（六）09:00</div>
+        <div class="meta"><svg class="ico"><use href="#i-pin"/></svg>南投 武界露營區 · <svg class="ico" style="margin-left:2px"><use href="#i-users"/></svg>4 人</div>
+      </div>
+      <div class="evt"><div class="t"><h4>沖繩四天三夜</h4><span class="badge role-cohost">協辦者</span></div>
+        <div class="meta"><svg class="ico"><use href="#i-cal"/></svg>10/4（六）08:00</div>
+        <div class="meta"><svg class="ico"><use href="#i-pin"/></svg>日本 沖繩・那霸 · <svg class="ico" style="margin-left:2px"><use href="#i-users"/></svg>4 人</div>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="item"><div class="r1"><span class="nm">包廂場地費 等 3 項</span><span class="amt">NT$ 5,600</span></div>
+        <div class="ds">小明 代墊 · 明細 3 筆 · 你分攤 NT$ 1,767</div>
+        <div class="tag-w"><span class="tag tag-item">肉</span><span class="tag tag-item">酒</span></div></div>
+      <div class="item"><div class="r1"><span class="nm">超商飲料</span><span class="amt">NT$ 360</span></div>
+        <div class="ds">大明 代墊 · 明細 1 筆 · 你分攤 NT$ 90</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 FLOW -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">09</span><h2>分帳結果卡</h2><p>方向箭頭 icon 標示金流；應得青綠、應付紅。</p></div>
+    <div class="grid g3">
+      <div class="flow"><div class="h"><span class="who">小明（你）</span><span class="badge role-host">主辦者</span></div>
+        <div class="fl"><span class="lbl"><svg class="ico"><use href="#i-arrow-l"/></svg>大明</span><span class="v mono">NT$ 1,230</span></div>
+        <div class="fl"><span class="lbl"><svg class="ico"><use href="#i-arrow-l"/></svg>小美</span><span class="v mono">NT$ 657</span></div>
+        <div class="fl"><span class="lbl"><svg class="ico"><use href="#i-arrow-l"/></svg>佳蓉</span><span class="v mono">NT$ 1,857</span></div>
+        <div class="ftot"><span class="k">總結應得</span><span class="get mono">NT$ 3,743</span></div></div>
+      <div class="flow"><div class="h"><span class="who">大明</span><span class="badge role-cohost">協辦者</span></div>
+        <div class="fl"><span class="lbl"><svg class="ico"><use href="#i-arrow-r"/></svg>小明（你）</span><span class="v mono">NT$ 1,230</span></div>
+        <div class="ftot"><span class="k">總結應付</span><span class="pay mono">NT$ 1,230</span></div></div>
+      <div class="flow"><div class="h"><span class="who">小美</span><span class="badge role-guest">參與者</span></div>
+        <div class="fl"><span class="lbl"><svg class="ico"><use href="#i-arrow-r"/></svg>小明（你）</span><span class="v mono">NT$ 657</span></div>
+        <div class="ftot"><span class="k">總結應付</span><span class="pay mono">NT$ 657</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 FEEDBACK -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">10</span><h2>提示、Banner 與彈窗</h2><p>破壞性操作彈窗二次確認。</p></div>
+    <div class="grid g2" style="margin-bottom:16px">
+      <div class="banner-ok"><span class="ic"><svg class="ico"><use href="#i-check"/></svg></span>分帳已產出 · 部門季末聚餐 · 合計 NT$ 5,960</div>
+      <div class="note"><svg class="ico"><use href="#i-info"/></svg>請大家於 09/12 前繳款至（013）012122131314</div>
+    </div>
+    <div class="mdemo">
+      <!-- 1. neutral confirm: 離開 / 放棄編輯 -->
+      <div class="modal">
+        <div class="mi info"><svg class="ico"><use href="#i-exit"/></svg></div>
+        <h5>離開</h5>
+        <p>確定要放棄編輯？未儲存的變更將不會保留。</p>
+        <div class="acts">
+          <button class="btn btn-outline btn-block">取消</button>
+          <button class="btn btn-primary btn-lg btn-block"><svg class="ico"><use href="#i-check"/></svg>確定</button>
+        </div>
+      </div>
+
+      <!-- 2. important / irreversible confirm: 結帳產出 -->
+      <div class="modal">
+        <div class="mi warn"><svg class="ico"><use href="#i-receipt"/></svg></div>
+        <h5>確定要結帳產出？</h5>
+        <p>結帳後產生正式分帳結果，無法編輯、還原。</p>
+        <div class="acts">
+          <button class="btn btn-outline btn-block">再檢查一下</button>
+          <button class="btn btn-primary btn-lg btn-block">確定結帳</button>
+        </div>
+      </div>
+
+      <!-- 3. destructive confirm: 刪除 -->
+      <div class="modal">
+        <div class="mi danger"><svg class="ico"><use href="#i-trash"/></svg></div>
+        <h5>刪除這筆款項？</h5>
+        <p>刪除後無法復原，相關分攤明細將一併移除。</p>
+        <div class="acts">
+          <button class="btn btn-outline btn-block">取消</button>
+          <button class="btn btn-danger-solid btn-lg btn-block"><svg class="ico"><use href="#i-trash"/></svg>刪除</button>
+        </div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:14px"><svg class="ico"><use href="#i-info"/></svg>三種確認情境：一般（主色圖示）、重要不可還原（提醒黃）、破壞性刪除（警示紅實心鈕）。次要按鈕改用較明顯的 1.5px 描邊，取代原本不清楚的淺框。</div>
+  </div>
+</section>
+
+<!-- 09 RULE & INVITE -->
+<section>
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">11</span><h2>分攤規則與邀請</h2><p>規則整合為單一卡片；裸露的標籤群以容器界定，不動底色。</p></div>
+    <div class="grid g2" style="align-items:start">
+      <!-- 分攤規則: single card -->
+      <div class="card">
+        <div class="edit-hd"><span class="lft">分攤規則</span><span class="save-btn"><svg class="ico"><use href="#i-check"/></svg></span></div>
+
+        <div class="rgroup">
+          <div class="rgroup-t">項目標籤（記帳項目用）</div>
+          <div class="tag-w"><span class="tag tag-item">肉</span><span class="tag tag-item">酒</span><span class="tag tag-item">素食</span><span class="tag tag-item">交通</span><span class="tag tag-item">其他</span></div>
+        </div>
+        <div class="rgroup">
+          <div class="rgroup-t">人員條件（人員定義自己用）</div>
+          <div class="tag-w"><span class="tag tag-cond">#吃素</span><span class="tag tag-cond">#不喝酒</span><span class="tag tag-cond">#不吃牛</span><span class="tag tag-cond">#食物過敏</span></div>
+        </div>
+
+        <div class="rgroup-t" style="margin:16px 0 4px">條件式分攤規則</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:10px">依據項目標籤與人員條件；未被設定到的人員與未設定規則的項目，皆採均分。</div>
+        <div class="rule">
+          <div class="rh"><span class="tag tag-item">肉</span></div>
+          <div class="rline"><span class="tag tag-cond">#吃素</span><span class="cnt">符合 1 人</span><span class="no">不計入</span></div>
+          <div class="rline base"><span>其他未符合規則的人員</span><span class="pct">每人 100%</span></div>
+        </div>
+        <div class="rule">
+          <div class="rh"><span class="tag tag-item">酒</span></div>
+          <div class="rline"><span class="tag tag-cond">#不喝酒</span><span class="cnt">符合 1 人</span><span class="no">不計入</span></div>
+          <div class="rline"><span class="tag tag-cond">#食物過敏</span><span class="cnt">符合 0 人</span><span class="pct">每人 50%</span></div>
+          <div class="rline base"><span>其他未符合規則的人員</span><span class="pct">每人 100%</span></div>
+        </div>
+      </div>
+
+      <!-- 邀請: single card -->
+      <div class="card invite-card">
+        <div class="edit-hd" style="margin-bottom:16px"><span class="lft">專屬邀請連結</span></div>
+        <div class="qr"><svg class="ico"><use href="#i-qr"/></svg></div>
+        <div class="lk"><svg class="ico"><use href="#i-link"/></svg>https://fenzhang.app/j/3RD</div>
+        <div style="text-align:center;margin:4px 0">邀請碼 <span class="cd">4KQ2-8P</span></div>
+        <button class="btn btn-primary btn-lg btn-block" style="margin-top:12px"><svg class="ico"><use href="#i-copy"/></svg>複製連結</button>
+      </div>
+    </div>
+
+    <div class="rgroup-t" style="margin-top:22px;color:var(--text-2)">單顆 inline 標籤（裸貼底色 · 空狀態 vs 有值）</div>
+    <div class="cmp">
+      <div class="cmp-col">
+        <div class="cmp-t">空狀態（佔位）</div>
+        <div class="cmp-stage">
+          <div class="inline-tag"><span class="lb">我的人員條件</span><span class="tag empty">無標籤</span></div>
+        </div>
+      </div>
+      <div class="cmp-col">
+        <div class="cmp-t">有值（替換為條件名）</div>
+        <div class="cmp-stage">
+          <div class="inline-tag"><span class="lb">我的人員條件</span><span class="tag tag-cond">#吃素</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rgroup-t" style="margin-top:22px;color:var(--text-2)">整組標籤（裸貼 vs 套容器）</div>
+    <div class="cmp">
+      <div class="cmp-col">
+        <div class="cmp-t">直接放在底色上（無容器）</div>
+        <div class="cmp-stage">
+          <div class="rgroup-t" style="color:var(--text-2)">項目標籤（記帳項目用）</div>
+          <div class="tag-w" style="margin-bottom:12px"><span class="tag tag-item">肉</span><span class="tag tag-item">酒</span><span class="tag tag-item">素食</span><span class="tag tag-item">交通</span><span class="tag tag-item">其他</span></div>
+          <div class="rgroup-t" style="color:var(--text-2)">人員條件（人員定義自己用）</div>
+          <div class="tag-w"><span class="tag tag-cond">#吃素</span><span class="tag tag-cond">#不喝酒</span><span class="tag tag-cond">#不吃牛</span><span class="tag tag-cond">#食物過敏</span></div>
+        </div>
+      </div>
+      <div class="cmp-col">
+        <div class="cmp-t">套群組容器（推薦）</div>
+        <div class="cmp-stage">
+          <div class="rgroup" style="margin-bottom:12px">
+            <div class="rgroup-t">項目標籤（記帳項目用）</div>
+            <div class="tag-w"><span class="tag tag-item">肉</span><span class="tag tag-item">酒</span><span class="tag tag-item">素食</span><span class="tag tag-item">交通</span><span class="tag tag-item">其他</span></div>
+          </div>
+          <div class="rgroup" style="margin-bottom:0">
+            <div class="rgroup-t">人員條件（人員定義自己用）</div>
+            <div class="tag-w"><span class="tag tag-cond">#吃素</span><span class="tag tag-cond">#不喝酒</span><span class="tag tag-cond">#不吃牛</span><span class="tag tag-cond">#食物過敏</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top:16px"><svg class="ico"><use href="#i-info"/></svg>標籤直接顯示在頁面底色（非卡片內）時，替該區塊套用容器（上方灰底 <b>群組容器</b>）或 hairline 外框，讓它從背景浮起——不調整全站底色、也不逐一為標籤加框。</div>
+  </div>
+</section>
+
+<footer><div class="wrap">分帳 App Design System v3 · 方案 1B 質感溫柔 · 主色 #6FB7B7 · 實心扁平 icon</div></footer>
+
+</body>
+</html>
