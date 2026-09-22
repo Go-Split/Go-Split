@@ -1,0 +1,25 @@
+# ==== 核心測試 ====
+# 版本用下限鎖（>=），讓 pip 找出對 Python 3.10~3.14 都相容的最新可用 wheel
+# 若你固定用 Python 3.11 或 3.12，也可以改回精確鎖（==）
+
+pytest>=8.3.2
+pytest-asyncio>=0.24.0
+pytest-cov>=5.0.0
+pytest-html>=4.1.1
+pytest-xdist>=3.6.1
+
+# ==== 屬性測試（不變量驗證）====
+hypothesis>=6.112.0
+
+# ==== API 測試 ====
+requests>=2.32.3
+jsonschema>=4.23.0
+referencing>=0.35.0
+
+# ==== E2E 測試（Python 3.14 需 playwright >= 1.55, greenlet >= 3.2）====
+playwright>=1.55.0
+pytest-playwright>=0.7.0
+
+# ==== 資料處理（Python 3.14 需 pyyaml >= 6.0.3）====
+pyyaml>=6.0.3
+python-dotenv>=1.0.1

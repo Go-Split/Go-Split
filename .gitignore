@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.hypothesis/
+htmlcov/
+.coverage
+*.egg-info/
+
+# venv
+.venv/
+venv/
+env/
+
+# 測試報告
+test-report.html
+reports/
+playwright-report/
+test-results/
+
+# 環境變數（含真實憑證）
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# doc.json（若不隨專案入版，另外掛載）
+# docs/doc.json
