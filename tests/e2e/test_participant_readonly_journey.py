@@ -28,33 +28,33 @@ class TestParticipantReadonlyJourney:
         home.expect_create_event_button_hidden_for_non_host()
 
     def test_D_zone_N08_N09_N11_participant_sees_readonly_only(
-        self, member_page
+        self, member_event_page
     ):
         """N09 分支：參與者只見唯讀入口"""
-        dashboard = EventDashboardPage(member_page)
+        dashboard = EventDashboardPage(member_event_page)
         dashboard.expect_readonly_view_for_participant()
         dashboard.expect_settle_button_hidden_for_participant()
 
     @pytest.mark.skip(reason="待補：需活動結帳後的 storage_state")
     def test_H_zone_N22_N23_participant_can_view_personal_summary_after_settled(
-        self, member_page
+        self, member_event_page
     ):
         """N22 → N23：結帳後參與者可看個人收支明細"""
-        settled_page = SettledDashboardH2Page(member_page)
+        settled_page = SettledDashboardH2Page(member_event_page)
         settled_page.expect_H2_banner_readonly_state_shown()
         settled_page.open_personal_net_summary()
 
     @pytest.mark.skip(reason="待補：需活動結帳後的 storage_state")
     def test_H_zone_N24_transfers_h3_hidden_for_participant_C31(
-        self, member_page
+        self, member_event_page
     ):
         """★§5.4 H3 + C31：參與者看不到付款流向清單入口"""
-        settled_page = SettledDashboardH2Page(member_page)
+        settled_page = SettledDashboardH2Page(member_event_page)
         settled_page.expect_transfers_h3_hidden_for_non_host()
 
     def test_F_zone_N13_participant_can_view_rules_readonly(
-        self, member_page
+        self, member_event_page
     ):
         """N13 分攤規則：三角色皆可唯讀查看（PRD §9 D 區）"""
-        dashboard = EventDashboardPage(member_page)
+        dashboard = EventDashboardPage(member_event_page)
         dashboard.expect_rules_editing_hidden_for_non_host()

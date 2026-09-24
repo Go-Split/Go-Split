@@ -25,24 +25,24 @@ class SettleH1Page:
 
     def __init__(self, page: Page):
         self.page = page
-        # 兩 tab
-        self.settle_split_tab = self.page.get_by_role(
-            "button", name="分帳"
-        )
-        self.settle_event_tab = self.page.get_by_role(
-            "button", name="活動"
-        )
+        # 兩 tab —— 用 .segmented-tab class 篩，避免撞 sidebar 上的「活動款項」
+        self.settle_split_tab = self.page.locator(
+            "button.segmented-tab"
+        ).filter(has_text="分帳")
+        self.settle_event_tab = self.page.locator(
+            "button.segmented-tab"
+        ).filter(has_text="活動")
         # N19 確認結帳按鈕
         self.confirm_settlement_button = self.page.get_by_role(
-            "button", name="確認結帳產出"
+            "button", name="確認結帳產出", exact=True
         )
         # 確認對話框
         self.confirmation_dialog = self.page.locator("text=/確定要結帳產出/")
         self.dialog_cancel_button = self.page.get_by_role(
-            "button", name="再檢查一下"
+            "button", name="再檢查一下", exact=True
         )
         self.dialog_final_confirm_button = self.page.get_by_role(
-            "button", name="確定結帳"
+            "button", name="確定結帳", exact=True
         )
         # 四維度 section titles
         self.dim_items_list = self.page.locator("text=/款項現況/")
@@ -89,8 +89,25 @@ class SettleH1Page:
         ).to_be_visible()
 
     def confirm_final_settlement_write_snapshot(self) -> None:
-        """N19 確認 → 進 settleDone (然後可回 settledEvent)"""
+        """N19 確認 → 進 settleDone 過場頁 → 點「返回活動頁」→ settledEvent (H2)。
+
+        Prototype 流程 (app.js L646, L2057)：
+        1. 點「確定結帳」→ setState({settled: true, screen: 'settleDone'})
+        2. settleDone 頁顯示「✓ 分帳已產出」+ 「返回活動頁」button
+        3. 點「返回活動頁」→ 進 settledEvent screen (H2 的正式頁面)
+        """
         self.dialog_final_confirm_button.click()
+        # 等 settleDone 頁 render
+        return_button = self.page.get_by_role(
+            "button", name="返回活動頁", exact=True
+        )
+        return_button.wait_for(state="visible", timeout=3_000)
+        return_button.click()
+        # 等 settledEvent 頁 render（用穩健 marker）
+        settled_markers = self.page.locator(
+            "text=/結帳不可編輯|我的付款流向|繳款狀況/"
+        )
+        expect(settled_markers.first).to_be_visible(timeout=5_000)
 
     def cancel_settlement_dialog(self) -> None:
         """N19 取消對話框"""
@@ -128,16 +145,28 @@ class SettledDashboardH2Page:
 
     def open_transfers_h3_list_host_only(self) -> None:
         """N24 付款流向清單 H3 (僅主辦入口)。
-        prototype: 從 hamburger 選單「繳款狀況」進入。"""
-        self.page.locator("button.hamburger").click()
-        self.page.locator("button.drawer-item").filter(
+        prototype: 點 sidebar「繳款狀況」項目（desktop 尺寸下 sidebar 直接可見）。"""
+        self.page.locator("button.sidebar-item").filter(
             has_text="繳款狀況"
         ).click()
 
     # ── 斷言 ───────────────────────────────────────────────
     def expect_H2_banner_readonly_state_shown(self) -> None:
-        expect(self.settled_pill).to_be_visible()
-        expect(self.readonly_hint.first).to_be_visible()
+        """H2 結帳後狀態驗證。
+
+        Prototype (app.js L1569, L2064) 說明：
+        - 「已結帳」pill 存在，但只在 evInfoCard **收合狀態** 顯示，預設展開時看不到
+        - 更穩健的 marker：「款項現況（結帳不可編輯）」文字 (L2076)
+        - 或 sidebar 上「繳款狀況」項目 (L1322, 僅 isSettled=true 時 render)
+        - 或「我的付款流向」section (L2066, settledEvent 頁特徵)
+
+        用這三個 marker 的 OR 邏輯，避免 pill 收合狀態依賴。
+        """
+        # 穩健 marker：至少一個成立即代表已在 settledEvent state
+        settled_markers = self.page.locator(
+            "text=/結帳不可編輯|我的付款流向|繳款狀況/"
+        )
+        expect(settled_markers.first).to_be_visible(timeout=5_000)
 
     def expect_C29_edit_entrypoints_hidden_after_settled(self) -> None:
         """★C29：結算後編輯入口直接隱藏"""
@@ -147,11 +176,10 @@ class SettledDashboardH2Page:
 
     def expect_transfers_h3_hidden_for_non_host(self) -> None:
         """§5.4 H3：僅主辦可見付款流向清單入口。
-        非主辦者 hamburger 選單無「繳款狀況」項目。"""
-        self.page.locator("button.hamburger").click()
-        payments_link = self.page.locator(
-            "button.drawer-item"
-        ).filter(has_text="繳款狀況")
+        非主辦者 sidebar 無「繳款狀況」項目。"""
+        payments_link = self.page.locator("button.sidebar-item").filter(
+            has_text="繳款狀況"
+        )
         expect(payments_link).to_have_count(0)
 
 

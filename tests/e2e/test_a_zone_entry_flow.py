@@ -138,23 +138,21 @@ class TestA_zone_N04c_recover_lost_guest_identity:
 class TestA_zone_all_paths_converge_to_home:
     """UML 匯流點：N04a/b/c 三條路徑皆進入 N06 活動列表 Home"""
 
-    @pytest.mark.skip(
-        reason="需三種角色的 storage_state 全部就緒後驗證匯流"
-    )
     def test_A_zone_host_after_login_lands_on_home(self, host_page):
+        """N04a → N06：主辦帳號登入後可見「新增活動」入口"""
         home = HomePage(host_page)
         home.expect_create_event_button_visible_for_host()
 
-    @pytest.mark.skip(reason="需 co 角色 storage_state")
     def test_A_zone_co_host_after_join_lands_on_home_without_create_button(
         self, co_page
     ):
+        """N04b → N06：協辦（免帳號）不可見「新增活動」按鈕"""
         home = HomePage(co_page)
         home.expect_create_event_button_hidden_for_non_host()
 
-    @pytest.mark.skip(reason="需 member 角色 storage_state")
     def test_A_zone_participant_after_join_lands_on_home_readonly(
         self, member_page
     ):
+        """N04b → N06：參與者（免帳號）不可見「新增活動」按鈕"""
         home = HomePage(member_page)
         home.expect_create_event_button_hidden_for_non_host()

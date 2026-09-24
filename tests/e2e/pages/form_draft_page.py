@@ -36,8 +36,54 @@ class FormDraftPage:
 
     # ── N14 草稿層：填欄位 ─────────────────────────────────
     def click_add_another_detail_row(self) -> None:
-        """新增一筆細項空白行"""
+        """點「新增明細」按鈕，unshift 一筆空白細項到最前面。
+        （app.js L1119-1120: `[{new}].concat(舊)` — LIFO 順序）
+        """
         self.add_new_detail_row_button.click()
+
+    def _ensure_at_least_one_draft_detail_card_exists(self) -> None:
+        """進 addItem screen 時 draft.details=[] 為空——若還沒任何卡片，
+        點一次「新增明細」建出第一張卡片（此時 fk 為 draft-name-1）。
+        """
+        first_card_name_input = self.page.locator(
+            "[data-fk='draft-name-1']"
+        )
+        if first_card_name_input.count() == 0:
+            self.click_add_another_detail_row()
+            first_card_name_input.wait_for(state="visible", timeout=3_000)
+
+    def add_detail_row_and_fill_it(
+        self,
+        detail_name: str,
+        amount_in_ntd: int,
+        item_tag: str = "",
+    ) -> None:
+        """新增一張細項卡並填入內容。**推薦用這個方法**（而非 fill_detail_row_at_index）。
+
+        Prototype LIFO 行為：每按「新增明細」→ 新卡 unshift 到最前面 (no=1)、
+        舊卡的 no 都往後推。所以「新填的細項一定在 no=1」——不需要追蹤 index。
+
+        典型用法（填 3 筆）：
+          form.add_detail_row_and_fill_it("牛肉", 800)  # 建 no=1 填「牛肉」
+          form.add_detail_row_and_fill_it("蔬菜", 300)  # 建新卡 no=1 填「蔬菜」、
+                                                        # 舊「牛肉」變 no=2
+          form.add_detail_row_and_fill_it("醬料", 100)  # 又建新卡 no=1 填「醬料」、
+                                                        # 「蔬菜」變 no=2、「牛肉」變 no=3
+        """
+        self.click_add_another_detail_row()
+        # 新卡永遠在 no=1（LIFO unshift）
+        name_input = self.page.locator("[data-fk='draft-name-1']")
+        amount_input = self.page.locator("[data-fk='draft-amount-1']")
+        # 等新卡 render 完成
+        name_input.wait_for(state="visible", timeout=3_000)
+        name_input.fill(detail_name)
+        amount_input.fill(str(amount_in_ntd))
+        if item_tag:
+            tag_button = self.page.get_by_role(
+                "button", name=item_tag
+            ).first
+            if tag_button.count() > 0:
+                tag_button.click()
 
     def fill_detail_row_at_index(
         self,
@@ -46,19 +92,27 @@ class FormDraftPage:
         amount_in_ntd: int,
         item_tag: str = "",
     ) -> None:
-        """填單筆細項欄位。
-        prototype 用 draft-name-{no}/draft-amount-{no} 作為 fk key，
-        no 從 0 開始遞增。
+        """填單筆細項欄位（**LEGACY** — 建議改用 add_detail_row_and_fill_it）。
+
+        row_index 對應**畫面上從上到下的位置**（0-based）→ 內部轉 no=row_index+1。
+
+        WARNING：LIFO 行為讓「index 對應建立順序」的直覺不成立——
+          第一次呼叫 (row_index=0) 建卡並填→ 該卡 no=1 對應 row_index=0 ✓
+          之後若呼叫 click_add_another_detail_row，新卡 no=1、舊卡 no=2
+          再呼叫 (row_index=1) 想填舊卡 → 舊卡現在確實是 no=2 ✓
+        所以此方法配合明確 index 可以工作，但呼叫端要清楚「index=畫面位置」。
+        推薦用 add_detail_row_and_fill_it 讓 POM 隱藏 LIFO 邏輯。
         """
-        name_input = self.page.locator(f"[data-fk='draft-name-{row_index}']")
+        self._ensure_at_least_one_draft_detail_card_exists()
+
+        fk_no = row_index + 1
+        name_input = self.page.locator(f"[data-fk='draft-name-{fk_no}']")
         amount_input = self.page.locator(
-            f"[data-fk='draft-amount-{row_index}']"
+            f"[data-fk='draft-amount-{fk_no}']"
         )
         name_input.fill(detail_name)
         amount_input.fill(str(amount_in_ntd))
-        # 品項標籤 (item_tag) 於 prototype 是 TagPicker，點標籤按鈕
         if item_tag:
-            # 在該細項卡片內找 tag button
             tag_button = self.page.get_by_role(
                 "button", name=item_tag
             ).first

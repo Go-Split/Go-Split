@@ -43,18 +43,20 @@ class TestCoOrganizerJourney:
         home = HomePage(co_page)
         home.expect_create_event_button_hidden_for_non_host()
 
-    def test_D_zone_N08_N09_co_host_sees_recording_no_settle(self, co_page):
+    def test_D_zone_N08_N09_co_host_sees_recording_no_settle(
+        self, co_event_page
+    ):
         """N09 分支：協辦見記帳入口，不見結帳按鈕"""
-        dashboard = EventDashboardPage(co_page)
+        dashboard = EventDashboardPage(co_event_page)
         dashboard.expect_recording_tab_visible_for_co_host()
         dashboard.expect_settle_button_hidden_for_participant()
 
-    def test_G_zone_N15_co_can_add_own_item_atomic(self, co_page):
+    def test_G_zone_N15_co_can_add_own_item_atomic(self, co_event_page):
         """N12→N15: 協辦可新增自己的款項並整筆提交"""
-        dashboard = EventDashboardPage(co_page)
+        dashboard = EventDashboardPage(co_event_page)
         dashboard.open_recording_form_draft_page()
 
-        form = FormDraftPage(co_page)
+        form = FormDraftPage(co_event_page)
         form.select_payer_by_member_display_name(
             CO_ORGANIZER_MEMBER.display_name
         )
@@ -68,11 +70,13 @@ class TestCoOrganizerJourney:
         form.expect_successful_commit_redirects_to_dashboard()
 
     @pytest.mark.skip(reason="需切到別人建立的 item 頁面驗證 G2 權限鎖")
-    def test_G_zone_G2_co_cannot_edit_others_item(self, co_page):
+    def test_G_zone_G2_co_cannot_edit_others_item(self, co_event_page):
         """★G2：協辦不能編輯別人（含 host）建立的款項"""
         pass
 
-    def test_E_zone_N10_member_settings_hidden_for_co_host(self, co_page):
+    def test_E_zone_N10_member_settings_hidden_for_co_host(
+        self, co_event_page
+    ):
         """N10 群組人員設定：協辦不可進入"""
-        member_settings = MemberSettingsPage(co_page)
+        member_settings = MemberSettingsPage(co_event_page)
         member_settings.expect_page_hidden_for_non_host()

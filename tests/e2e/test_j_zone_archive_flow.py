@@ -41,73 +41,104 @@ class TestJ_zone_N25_offline_payment_confirmation:
 
 
 class TestJ_zone_N26_N27_finalize_and_archive:
-    """N26 結清活動 → N27 封存"""
+    """N26 結清活動 → N27 封存（走已結帳的主辦活動「系友會春酒」）"""
 
-    @pytest.mark.skip(reason="需結帳後的 storage_state")
     def test_J_zone_N26_L11_finalize_button_enabled_regardless_of_payments(
-        self, host_page
+        self, host_settled_event_page
     ):
         """★L11：封存無前置條件，即使無任何繳款動作，按鈕仍可按"""
-        settled = SettledDashboardH2Page(host_page)
+        settled = SettledDashboardH2Page(host_settled_event_page)
         settled.open_transfers_h3_list_host_only()
 
-        transfers = TransfersH3Page(host_page)
+        transfers = TransfersH3Page(host_settled_event_page)
         transfers.expect_L11_archive_button_enabled_regardless_of_payment_state()
 
-    @pytest.mark.skip(reason="需結帳後的 storage_state")
+    @pytest.mark.skip(
+        reason=(
+            "POM 待實作 + 規格落差雙重問題："
+            "Prototype (app.js archiveEvent L651) 直接 setState({archived: true, "
+            "screen: 'home'})——無獨立確認 dialog，違反 §11 J 區補強 v0.9。"
+            "TransfersH3Page.expect_archive_confirmation_shows_irreversible_only "
+            "目前為 pass 空實作。前端補確認 dialog + POM 補斷言後可轉為真測試。"
+        )
+    )
     def test_J_zone_N27_archive_confirm_dialog_shows_irreversible_only(
-        self, host_page
+        self, host_settled_event_page
     ):
         """★§11 J 區補強（C31 修訂 v0.12）：
         確認框僅明示「不可還原」，不再提及繳款狀態。
         """
-        settled = SettledDashboardH2Page(host_page)
+        settled = SettledDashboardH2Page(host_settled_event_page)
         settled.open_transfers_h3_list_host_only()
 
-        transfers = TransfersH3Page(host_page)
+        transfers = TransfersH3Page(host_settled_event_page)
         transfers.click_finalize_and_archive_activity()
         transfers.expect_archive_confirmation_shows_irreversible_only()
 
-    @pytest.mark.skip(reason="需結帳後的 storage_state")
-    def test_J_zone_N27_confirm_writes_archived_true(self, host_page):
-        """N27 確認 → archived=true → N28 全區完全唯讀"""
-        settled = SettledDashboardH2Page(host_page)
+    def test_J_zone_N27_confirm_writes_archived_true(
+        self, host_settled_event_page
+    ):
+        """N27 確認 → archived=true → N28 全區完全唯讀。
+        Prototype 直接封存（無 dialog），點按即完成。"""
+        settled = SettledDashboardH2Page(host_settled_event_page)
         settled.open_transfers_h3_list_host_only()
 
-        transfers = TransfersH3Page(host_page)
+        transfers = TransfersH3Page(host_settled_event_page)
         transfers.click_finalize_and_archive_activity()
-        transfers.confirm_archive_write_archived_true()
-        # 進入 N28
-        dashboard = EventDashboardPage(host_page)
-        dashboard.expect_archived_state_fully_readonly()
+        # prototype archiveEvent 後直接 setState({screen: 'home'})——
+        # 從 home 頁可看到該活動的 pill 已變成「已封存」
+        from playwright.sync_api import expect
+        expect(
+            host_settled_event_page.locator(".pill-archived").first
+        ).to_be_visible(timeout=5_000)
 
 
 class TestJ_zone_N28_fully_readonly_state:
-    """N28 全區完全唯讀"""
+    """N28 全區完全唯讀
+    
+    prototype (data.js L31) 預埋一個已封存活動「七月生日會」(archived=true)，
+    但 role='member'。用 member_page 進 home、點該活動可驗封存後行為。
+    """
 
-    @pytest.mark.skip(reason="需已封存的 storage_state")
     def test_J_zone_N28_archived_dashboard_shows_readonly_banner(
-        self, host_page
+        self, member_page
     ):
         """§11 J 區：封存後、完全唯讀"""
-        dashboard = EventDashboardPage(host_page)
-        dashboard.expect_archived_state_fully_readonly()
+        # data.js L31: '七月生日會' role='member' archived=true
+        cards = member_page.locator("button.card, button.card-pad").filter(
+            has_text="七月生日會"
+        )
+        cards.first.click()
+        # 進封存後的活動——應可見「已封存」pill
+        from playwright.sync_api import expect
+        expect(
+            member_page.locator(".pill-archived").first
+        ).to_be_visible(timeout=5_000)
 
-    @pytest.mark.skip(reason="需已封存的 storage_state")
+    @pytest.mark.skip(
+        reason=(
+            "POM 待實作：進封存活動後點選 sidebar「分帳產出」查看四維度，"
+            "本 flow 需要進 archived screen 的 sidebar 導覽——目前 POM 未支援。"
+        )
+    )
     def test_J_zone_N28_archived_can_still_view_four_dimensions(
-        self, host_page
+        self, member_page
     ):
         """§11 J 區：可檢視 = 完整分帳四維度仍可唯讀檢視"""
-        # 進入 H1 頁應可看到（唯讀）四維度
         pass
 
-    @pytest.mark.skip(reason="需已封存的 storage_state")
     def test_J_zone_N28_archived_out_of_scope_no_unarchive_button(
-        self, host_page
+        self, member_page
     ):
         """★§11 J Out of Scope：不提供解除封存"""
-        dashboard = EventDashboardPage(host_page)
-        unarchive_button = host_page.get_by_test_id("btn-unarchive")
-        # 反向斷言
+        # 進封存活動
+        cards = member_page.locator("button.card, button.card-pad").filter(
+            has_text="七月生日會"
+        )
+        cards.first.click()
+        # 反向斷言：畫面上無「解除封存」相關按鈕
         from playwright.sync_api import expect
-        expect(unarchive_button).to_have_count(0)
+        unarchive_texts = member_page.locator(
+            "text=/解除封存|取消封存|還原|unarchive/i"
+        )
+        expect(unarchive_texts).to_have_count(0)

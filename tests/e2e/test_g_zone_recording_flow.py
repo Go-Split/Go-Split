@@ -27,32 +27,23 @@ class TestG_zone_N14_form_draft:
     """N14 前端草稿層行為"""
 
     def test_G_zone_N14_L20_draft_layer_preserves_content_on_navigate(
-        self, host_page
+        self, host_event_page
     ):
         """★L20 前端草稿層：內容不即時存後端，跳頁時保留"""
         # 需搭配前端實作，此處提供 skeleton
         pass
 
-    def test_G_zone_N14_add_multiple_detail_rows(self, host_page):
+    def test_G_zone_N14_add_multiple_detail_rows(self, host_event_page):
         """N14: 一張款項卡可加多筆細項"""
-        dashboard = EventDashboardPage(host_page)
+        dashboard = EventDashboardPage(host_event_page)
         dashboard.open_recording_form_draft_page()
 
-        form = FormDraftPage(host_page)
+        form = FormDraftPage(host_event_page)
         form.select_payer_by_member_display_name(HOST_MEMBER.display_name)
-        form.fill_detail_row_at_index(
-            row_index=0,
-            detail_name="牛肉",
-            amount_in_ntd=800,
-            item_tag="食材",
-        )
-        form.click_add_another_detail_row()
-        form.fill_detail_row_at_index(
-            row_index=1,
-            detail_name="蔬菜",
-            amount_in_ntd=300,
-            item_tag="食材",
-        )
+        # 每次呼叫 add_detail_row_and_fill_it 都建新卡並填內容
+        # LIFO: 新卡永遠 no=1，POM 內部處理
+        form.add_detail_row_and_fill_it("牛肉", 800, "食材")
+        form.add_detail_row_and_fill_it("蔬菜", 300, "食材")
         # 尚未提交 → 停留原頁
         # 由 N15 測試接續
 
@@ -61,15 +52,15 @@ class TestG_zone_N15_atomic_commit_success:
     """N15→N17→N21 成功路徑"""
 
     def test_G_zone_N15_all_details_valid_persists_to_backend(
-        self, host_page
+        self, host_event_page
     ):
         """N15 全部通過 → 更新全域 Store → 回 N08"""
-        dashboard = EventDashboardPage(host_page)
+        dashboard = EventDashboardPage(host_event_page)
         dashboard.open_recording_form_draft_page()
 
-        form = FormDraftPage(host_page)
+        form = FormDraftPage(host_event_page)
         form.select_payer_by_member_display_name(HOST_MEMBER.display_name)
-        form.fill_detail_row_at_index(0, "碳", 200, "食材")
+        form.add_detail_row_and_fill_it("碳", 200, "食材")
         form.submit_all_details_as_atomic_commit()
         form.expect_successful_commit_redirects_to_dashboard()
 
@@ -77,53 +68,68 @@ class TestG_zone_N15_atomic_commit_success:
 class TestG_zone_N15_N17_N20_atomic_commit_failure:
     """N15→N17→N20 失敗路徑（C12 核心測試群）"""
 
-    def test_G_zone_C12_one_bad_detail_rejects_entire_card(self, host_page):
+    @pytest.mark.xfail(
+        reason=(
+            "★規格與實作落差：C12 要求「一筆細項不合法 → 整張退回」，"
+            "但 prototype (app.js L1079-1082) 對 amount 只擋「空字串」與「非數字」，"
+            "不擋「金額=0」——0 被視為合法整數。因此 amount=0 的細項提交後成功離開 "
+            "addItem screen 進入 event 頁，違反 C12「停留原頁」預期。"
+            "後端接入引擎規則後（L22 除零檢查）可轉為 pass。"
+        ),
+        strict=True,
+    )
+    def test_G_zone_C12_one_bad_detail_rejects_entire_card(self, host_event_page):
         """★C12 核心：一筆細項 amount=0（除零違規）→ 整張退回"""
-        dashboard = EventDashboardPage(host_page)
+        dashboard = EventDashboardPage(host_event_page)
         dashboard.open_recording_form_draft_page()
 
-        form = FormDraftPage(host_page)
+        form = FormDraftPage(host_event_page)
         form.select_payer_by_member_display_name(HOST_MEMBER.display_name)
-        form.fill_detail_row_at_index(0, "正常品項", 500, "食材")
-        form.click_add_another_detail_row()
-        form.fill_detail_row_at_index(1, "違規品項", 0, "食材")
+        form.add_detail_row_and_fill_it("正常品項", 500, "食材")
+        form.add_detail_row_and_fill_it("違規品項", 0, "食材")
         form.submit_all_details_as_atomic_commit()
 
         form.expect_C12_stays_on_form_after_validation_failure()
 
+    @pytest.mark.xfail(
+        reason=(
+            "★規格與實作落差：C11 要求「多筆錯誤逐一顯示 + 頂部筆數摘要」，"
+            "同 C12 的根源——prototype 不擋 amount=0，此測試三筆 amount=0 "
+            "全部視為合法，無錯誤提示可驗證。後端接入後可轉為 pass。"
+        ),
+        strict=True,
+    )
     def test_G_zone_C11_multiple_bad_details_all_shown_with_count_summary(
-        self, host_page
+        self, host_event_page
     ):
         """★C11：多筆異常同時展開 + 頂部筆數摘要"""
-        dashboard = EventDashboardPage(host_page)
+        dashboard = EventDashboardPage(host_event_page)
         dashboard.open_recording_form_draft_page()
 
-        form = FormDraftPage(host_page)
+        form = FormDraftPage(host_event_page)
         form.select_payer_by_member_display_name(HOST_MEMBER.display_name)
-        # 三筆全錯
+        # 三筆全錯（amount=0）
         for i in range(3):
-            if i > 0:
-                form.click_add_another_detail_row()
-            form.fill_detail_row_at_index(i, f"錯品項{i}", 0, "食材")
+            form.add_detail_row_and_fill_it(f"錯品項{i}", 0, "食材")
         form.submit_all_details_as_atomic_commit()
 
         form.expect_C11_error_count_summary_at_top(expected_count=3)
         for i in range(3):
             form.expect_error_shown_on_detail_row_at_index(row_index=i)
 
-    def test_G_zone_C10_total_mismatch_shows_diff_message(self, host_page):
+    def test_G_zone_C10_total_mismatch_shows_diff_message(self, host_event_page):
         """★C10：金額合計與品項金額差 → 顯示差額文案"""
         # 需前端支援「款項總金額」欄位與細項總和的差異偵測
         pass
 
     @pytest.mark.skip(reason="需引擎規則配合觸發 L22 除零")
     def test_G_zone_L22_zero_weight_all_excluded_blocks_submit(
-        self, host_page
+        self, host_event_page
     ):
         """★L22：權重全 0 情境 A → 擋存 + 即時提示"""
-        dashboard = EventDashboardPage(host_page)
+        dashboard = EventDashboardPage(host_event_page)
         dashboard.open_recording_form_draft_page()
 
-        form = FormDraftPage(host_page)
+        form = FormDraftPage(host_event_page)
         # ... 設計除零情境
         form.expect_L22_zero_participant_blocks_submit()
